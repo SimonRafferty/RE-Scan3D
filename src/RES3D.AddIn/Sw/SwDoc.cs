@@ -168,6 +168,9 @@ namespace RES3D.AddIn.Sw
         }
 
         /// <summary>Graphics and mesh bodies in the part, each with the feature that owns it.</summary>
+        /// <summary>swBodyType_e values that the 2018 API (the oldest supported) does not name.</summary>
+        public const int MeshBody = 6, GraphicsBody = 7;
+
         public List<KeyValuePair<IBody2, IFeature>> MeshBodies()
         {
             var list = new List<KeyValuePair<IBody2, IFeature>>();
@@ -180,7 +183,7 @@ namespace RES3D.AddIn.Sw
             {
                 var b = (IBody2)o;
                 int type = b.GetType();
-                if (type != (int)swBodyType_e.swGraphicsBody && type != (int)swBodyType_e.swMeshBody) continue;
+                if (type != GraphicsBody && type != MeshBody) continue;
                 var feats = b.GetFeatures() as object[];
                 var f = feats != null && feats.Length > 0 ? feats[0] as IFeature : null;
                 list.Add(new KeyValuePair<IBody2, IFeature>(b, f));

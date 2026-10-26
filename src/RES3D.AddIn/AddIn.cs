@@ -23,8 +23,8 @@ using SolidWorks.Interop.swconst;
 using SolidWorks.Interop.swpublished;
 
 [assembly: AssemblyTitle("RE-Scan3D - scan reverse engineering for SolidWorks")]
-[assembly: AssemblyVersion("0.2.0.0")]
-[assembly: AssemblyFileVersion("0.2.0.0")]
+[assembly: AssemblyVersion("0.2.1.0")]
+[assembly: AssemblyFileVersion("0.2.1.0")]
 
 namespace RES3D.AddIn
 {
@@ -35,7 +35,7 @@ namespace RES3D.AddIn
     {
         public const string Title = "RE-Scan3D";
         public const string TabName = "RE-Scan3D";
-        public const int MinRevision = 34;          // SolidWorks 2026 (RevisionNumber major + 1992)
+        public const int MinRevision = 26;          // SolidWorks 2018 (RevisionNumber major + 1992); built against the 2018 API
         private const int GroupId = 0x5C3E;
         // bump when commands are added/removed so SolidWorks rebuilds the stored toolbar
         private const int ToolbarVersion = 7;   // 7: Section and Snap -> Contours
@@ -56,7 +56,7 @@ namespace RES3D.AddIn
             var app = (ISldWorks)thisSW;
             int major;
             int.TryParse((app.RevisionNumber() ?? "").Split('.')[0], out major);
-            // one registration serves every installed SolidWorks; stay dormant (and silent) before 2026.
+            // one registration serves every installed SolidWorks; stay dormant (and silent) before 2018.
             // Development only: HKCU\Software\RES3D OnlyRevision=<major> runs RE-Scan3D in that one version and
             // keeps it dormant in every other (used to test in SolidWorks 2025 while 2026 is in use).
             int only = (int)Settings.Get("OnlyRevision", 0);
@@ -64,9 +64,9 @@ namespace RES3D.AddIn
             if (!run)
             {
                 // test setup only: the startup flag is shared by every SolidWorks version, don't come back here.
-                // (For a normal install an older SolidWorks must NOT switch it off: 2026+ needs it.)
+                // (For a normal install an older SolidWorks must NOT switch it off: the supported ones need it.)
                 if (only > 0) NoAutoStart();
-                Log.Info("SolidWorks revision " + app.RevisionNumber() + (only > 0 ? " is not the OnlyRevision test setting" : " is older than 2026") + ": RE-Scan3D stays dormant");
+                Log.Info("SolidWorks revision " + app.RevisionNumber() + (only > 0 ? " is not the OnlyRevision test setting" : " is older than 2018") + ": RE-Scan3D stays dormant");
                 return true;
             }
             sw = app;

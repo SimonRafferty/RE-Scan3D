@@ -85,7 +85,9 @@ namespace RES3D.AddIn.Sw
                 var edges = ((IVertex)e).GetEdges() as object[];
                 if (edges != null && edges.Length > 0) body = ((IEdge)edges[0]).GetBody();
             }
-            return body != null && (body.IsGraphicsBody() || body.IsMeshBody());
+            // 6 = mesh body, 7 = graphics body (the 2018 API names neither, nor IsGraphicsBody)
+            int type = body == null ? -1 : body.GetType();
+            return type == 6 || type == 7;
         }
     }
 }

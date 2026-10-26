@@ -38,7 +38,7 @@ namespace RES3D.AddIn.Sw
             foreach (var f in doc.AllFeatures()) before.Add(f.Name);
             var part = (IPartDoc)doc.Doc;
             const int options = (int)(swInsertPartOptions_e.swInsertPartImportSolids | swInsertPartOptions_e.swInsertPartImportSurfaces | swInsertPartOptions_e.swInsertPartBreakLink);
-            part.InsertPart3(meshPart, options, "");
+            part.InsertPart2(meshPart, options);   // InsertPart3 is 2019+; InsertPart2 works in 2018 and later
             // with the link broken SolidWorks makes a "broken derived part" folder holding one surface feature per
             // mesh body (seen in 2025). The folder is the display: named "Scan - <name>" and put in the Scan folder;
             // the surfaces inside are named "Scan - <name> 1, 2, ..." so every part of it is found and deleted.

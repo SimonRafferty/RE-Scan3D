@@ -1,6 +1,6 @@
 # RE-Scan3D user guide
 
-RE-Scan3D helps you model a part in SOLIDWORKS 2026 (or later) on top of a 3D scan. The scan is temporary
+RE-Scan3D helps you model a part in SOLIDWORKS 2018 (or later) on top of a 3D scan. The scan is temporary
 scaffolding: everything RE-Scan3D makes is an ordinary SOLIDWORKS feature (reference planes, axes, sketch points,
 splines), and **Remove Mesh Data** removes the scan, so the part opens and rebuilds on any machine without RE-Scan3D.
 

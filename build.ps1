@@ -1,12 +1,13 @@
 # Build RE-Scan3D and run its offline tests. No registration, no running SolidWorks needed.
 #
-#   powershell -ExecutionPolicy Bypass -File build.ps1 [-NoTests] [-OutDir <dir>] [-SwApi 34] [-Bench]
+#   powershell -ExecutionPolicy Bypass -File build.ps1 [-NoTests] [-OutDir <dir>] [-SwApi 26] [-Bench]
 #
 # Compiles with the Roslyn csc against the .NET Framework 4.8 runtime assemblies (no .NET SDK, targeting
 # pack or NuGet on this machine; DECISIONS D2) and the SolidWorks interop assemblies of the OLDEST supported
-# version (-SwApi 34 = SolidWorks 2026). Interop types are EMBEDDED (/link), so no interop DLL ships and the
+# version (-SwApi 26 = SolidWorks 2018; if that is not installed, the oldest installed from 2018 on). Interop types are
+# EMBEDDED (/link), so no interop DLL ships and the
 # add-in runs in later versions without a rebuild; a call newer than 2026 fails here, not on a user's machine.
-param([switch]$NoTests, [string]$OutDir, [string]$SwApi = '34', [switch]$Bench)
+param([switch]$NoTests, [string]$OutDir, [string]$SwApi = '', [switch]$Bench)
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $bin = if ($OutDir) { $OutDir } else { Join-Path $here 'bin' }
@@ -25,11 +26,13 @@ $csc = @(
 if (-not $csc) { throw 'Roslyn csc.exe not found (install Visual Studio Build Tools)' }
 $fw = "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319"
 
-$sw = Get-ChildItem "$env:ProgramFiles\SOLIDWORKS Corp" -Directory -ErrorAction SilentlyContinue |
-    Where-Object { (Test-Path "$($_.FullName)\SolidWorks.Interop.sldworks.dll") -and
-                   ((Get-Item "$($_.FullName)\SolidWorks.Interop.sldworks.dll").VersionInfo.FileVersion -like "$SwApi.*") } |
-    Select-Object -First 1
-if (-not $sw) { throw "SolidWorks interop assemblies of version $SwApi.x (SolidWorks $([int]$SwApi + 1992)) not found" }
+$installs = @(Get-ChildItem "$env:ProgramFiles\SOLIDWORKS Corp" -Directory -ErrorAction SilentlyContinue |
+    Where-Object { Test-Path "$($_.FullName)\SolidWorks.Interop.sldworks.dll" } |
+    ForEach-Object { [pscustomobject]@{ Dir = $_; Major = [int]((Get-Item "$($_.FullName)\SolidWorks.Interop.sldworks.dll").VersionInfo.FileVersion.Split('.')[0]) } })
+if ($SwApi) { $sw = ($installs | Where-Object { $_.Major -eq [int]$SwApi } | Select-Object -First 1) }
+else { $sw = ($installs | Where-Object { $_.Major -ge 26 } | Sort-Object Major | Select-Object -First 1) }   # oldest from 2018 on
+if (-not $sw) { throw "SolidWorks interop assemblies $(if ($SwApi) { "of version $SwApi.x" } else { 'of SolidWorks 2018 or later' }) not found" }
+$sw = $sw.Dir
 $swdir = $sw.FullName
 Write-Host "SolidWorks API: $swdir (interop $((Get-Item "$swdir\SolidWorks.Interop.sldworks.dll").VersionInfo.FileVersion), embedded)"
 $swrefs = @('sldworks', 'swconst', 'swpublished') | ForEach-Object { "/link:$swdir\SolidWorks.Interop.$_.dll" }
