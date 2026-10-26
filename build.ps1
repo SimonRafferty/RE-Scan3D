@@ -1,4 +1,4 @@
-# Build ScanRE and run its offline tests. No registration, no running SolidWorks needed.
+# Build RE-Scan3D and run its offline tests. No registration, no running SolidWorks needed.
 #
 #   powershell -ExecutionPolicy Bypass -File build.ps1 [-NoTests] [-OutDir <dir>] [-SwApi 34] [-Bench]
 #
@@ -11,8 +11,8 @@ $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $bin = if ($OutDir) { $OutDir } else { Join-Path $here 'bin' }
 # SolidWorks keeps a registered add-in's DLLs locked: building into the folder it loads from would fail part-way
-if (-not $OutDir -and (Get-Process SLDWORKS -ErrorAction SilentlyContinue) -and (Test-Path (Join-Path $bin 'ScanRE.AddIn.dll'))) {
-    Write-Warning 'SolidWorks is running; if it has loaded ScanRE from bin\ the build will fail. Use -OutDir to build elsewhere.'
+if (-not $OutDir -and (Get-Process SLDWORKS -ErrorAction SilentlyContinue) -and (Test-Path (Join-Path $bin 'RES3D.AddIn.dll'))) {
+    Write-Warning 'SolidWorks is running; if it has loaded RE-Scan3D from bin\ the build will fail. Use -OutDir to build elsewhere.'
 }
 New-Item -ItemType Directory -Force $bin | Out-Null
 
@@ -48,15 +48,19 @@ function Build([string]$dir, [string]$name, [string]$target, [string[]]$extra) {
 }
 
 $ui = @("/reference:$fw\System.Windows.Forms.dll", "/reference:$fw\System.Drawing.dll", "/reference:$fw\Microsoft.CSharp.dll")
-Build 'src\ScanRE.Core' 'ScanRE.Core' 'library' @()
-Build 'src\ScanRE.AddIn' 'ScanRE.AddIn' 'library' ($swrefs + $ui + "/reference:$bin\ScanRE.Core.dll")
-Build 'tools\ScanRE.Cli' 'ScanRE.Cli' 'exe' @("/reference:$bin\ScanRE.Core.dll")
+Build 'src\RES3D.Core' 'RES3D.Core' 'library' @()
+Build 'src\RES3D.AddIn' 'RES3D.AddIn' 'library' ($swrefs + $ui + "/reference:$bin\RES3D.Core.dll")
+Build 'tools\RES3D.Cli' 'RES3D.Cli' 'exe' @("/reference:$bin\RES3D.Core.dll")
 # the offline test suite is kept in the development repository only
-$hasTests = Test-Path (Join-Path $here 'src\ScanRE.Tests')
-if ($hasTests) { Build 'src\ScanRE.Tests' 'ScanRE.Tests' 'exe' @("/reference:$bin\ScanRE.Core.dll") }
+$hasTests = Test-Path (Join-Path $here 'src\RES3D.Tests')
+if ($hasTests) { Build 'src\RES3D.Tests' 'RES3D.Tests' 'exe' @("/reference:$bin\RES3D.Core.dll") }
+# the live SolidWorks test (drives a running SolidWorks; never run by this script)
+if ($hasTests -and (Test-Path (Join-Path $here 'src\RES3D.SwTests'))) {
+    Build 'src\RES3D.SwTests' 'RES3D.SwTests' 'exe' ($swrefs + $ui + @("/reference:$bin\RES3D.Core.dll", "/reference:$bin\RES3D.Tests.exe"))
+}
 
 if ($NoTests -or -not $hasTests) { return }
 $args = @((Join-Path $here 'results'))
 if ($Bench) { $args += '--bench' }
-& (Join-Path $bin 'ScanRE.Tests.exe') @args
+& (Join-Path $bin 'RES3D.Tests.exe') @args
 if ($LASTEXITCODE -ne 0) { throw "$LASTEXITCODE test(s) failed" }
