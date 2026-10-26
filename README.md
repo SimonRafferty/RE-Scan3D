@@ -3,8 +3,9 @@
 **Download:** [latest release (installer)](https://github.com/SimonRafferty/RE-Scan3D/releases/latest) ·
 [v0.2.1](https://github.com/SimonRafferty/RE-Scan3D/releases/tag/v0.2.1)
 
-A SOLIDWORKS 2018+ add-in for modelling parts on top of 3D scans (STL, OBJ, PLY). It works to one rule: **everything it creates is a native SOLIDWORKS feature**, and the scan is temporary
-scaffolding that Remove Mesh Data removes, so parts open and rebuild without the add-in.
+A SOLIDWORKS 2018+ add-in for modelling parts on top of 3D scans (STL, OBJ, PLY). It works to one rule:
+**everything it creates is a native SOLIDWORKS feature**, and the scan is temporary scaffolding that Remove Mesh
+Data removes, so parts open and rebuild without the add-in.
 
 All commands are on the **RE-Scan3D** tab of the CommandManager:
 
